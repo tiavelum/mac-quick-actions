@@ -1,13 +1,14 @@
 # mac-quick-actions
 
 Small macOS integrations generated from plain text and worth versioning:
-two Finder Quick Actions for comparing files in VS Code, and a tiny
-application that holds the Accessibility permission for a Control Center
-hotkey.
+two Finder Quick Actions for comparing files in VS Code, two Quick Actions
+that take screenshots from easy key combinations, and two tiny applications
+that hold the permissions these keys need: Accessibility for a Control
+Center hotkey, screen recording for the screenshots.
 
 ```bash
-./install.sh              # install the Quick Actions; build the app if absent
-./install.sh --rebuild    # rebuild the app (costs the Accessibility grant — see below)
+./install.sh              # install the Quick Actions; build the apps if absent
+./install.sh --rebuild    # rebuild the apps (costs their permission grants — see below)
 ./build.sh                # regenerate the .workflow bundles from the templates
 ```
 
@@ -28,6 +29,43 @@ Search System Settings → Keyboard Shortcuts → Services for the colon form,
 which is also where a service that arrived disabled is switched on and gets
 a shortcut. If an action does nothing, open its bundle in Automator and
 press Run: the log shows the real error.
+
+## Screenshots from the keyboard
+
+Two Quick Actions work in every application and send the screenshot to
+the clipboard:
+
+| Keys | Quick Action | Does |
+|---|---|---|
+| Control + Option + Command + Space | Screenshot: Window or Selection | Starts in window mode; Space switches to selection and back |
+| Control + Option + Command + Return | Screenshot: Whole Screen | Captures the display under the mouse pointer |
+
+The Quick Actions only pass the mode on; `/Applications/Screenshot
+Helper.app`, built from `screenshot-helper.applescript`, takes the
+screenshot. Run from a Quick Action itself, the capture would ask the app in
+front for screen recording permission — every app in turn — and the
+Automator runner as well; run from the helper, only the helper asks. It has
+no Dock icon and skips a second capture while one is open.
+
+The helper stays running, started at login by the launch agent
+`~/Library/LaunchAgents/io.github.tiavelum.screenshot-helper.plist`, which
+`install.sh` writes. An AppleScript app launched while Control is held — as
+every screenshot key does — stops at a "Press Run to run this script"
+screen; a running one only receives the key's signal. If that screen ever
+appears, the helper was not running; run `./install.sh` to start it again.
+
+`install.sh` installs the Quick Actions, writes their keys to the Services
+preferences and builds the helper. One step stays manual: the first
+screenshot asks for **Screen & System Audio Recording** permission for
+**Screenshot Helper** and takes no picture. Choose **Open System Settings**,
+switch Screenshot Helper on, and take the screenshot again; if macOS asks
+whether it may bypass the window picker, allow that too. Grant it to no
+other app — granting it to Terminal or an editor hands it to everything that
+runs there.
+
+Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
+Services → General. A Quick Action without a key, or with a different one,
+gets it there by double-clicking the key column.
 
 ## Control Center Toggle.app
 

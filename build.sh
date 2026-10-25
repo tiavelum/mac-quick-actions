@@ -1,5 +1,29 @@
+# build <bundle> <menu title> <script> <uuid tag> [finder|global]
+#   finder  acts on the files selected in Finder (the default)
+#   global  takes no input and is offered in every application, so a
+#           key combination assigned to it works wherever you are
 build() {
-  name="$1"; menu="$2"; script="$3"; u="$4"
+  name="$1"; menu="$2"; script="$3"; u="$4"; scope="${5:-finder}"
+  if [ "$scope" = "global" ]; then
+    context=""
+    input="com.apple.Automator.nothing"
+    app=""
+  else
+    context="			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSApplicationIdentifier</key>
+				<string>com.apple.finder</string>
+			</dict>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.item</string>
+			</array>"
+    input="com.apple.Automator.fileSystemObject"
+    app="		<key>serviceApplicationBundleID</key>
+		<string>com.apple.finder</string>
+		<key>serviceApplicationPath</key>
+		<string>/System/Library/CoreServices/Finder.app</string>"
+  fi
   rm -rf "$name.workflow"; mkdir -p "$name.workflow/Contents"
   cat > "$name.workflow/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -16,15 +40,7 @@ build() {
 			</dict>
 			<key>NSMessage</key>
 			<string>runWorkflowAsService</string>
-			<key>NSRequiredContext</key>
-			<dict>
-				<key>NSApplicationIdentifier</key>
-				<string>com.apple.finder</string>
-			</dict>
-			<key>NSSendFileTypes</key>
-			<array>
-				<string>public.item</string>
-			</array>
+$context
 		</dict>
 	</array>
 </dict>
@@ -156,19 +172,16 @@ PLIST
 		<key>applicationPaths</key>
 		<array/>
 		<key>inputTypeIdentifier</key>
-		<string>com.apple.Automator.fileSystemObject</string>
+		<string>$input</string>
 		<key>outputTypeIdentifier</key>
 		<string>com.apple.Automator.nothing</string>
 		<key>presentationMode</key>
 		<integer>15</integer>
 		<key>processesInput</key>
 		<integer>0</integer>
-		<key>serviceApplicationBundleID</key>
-		<string>com.apple.finder</string>
-		<key>serviceApplicationPath</key>
-		<string>/System/Library/CoreServices/Finder.app</string>
+$app
 		<key>serviceInputTypeIdentifier</key>
-		<string>com.apple.Automator.fileSystemObject</string>
+		<string>$input</string>
 		<key>serviceOutputTypeIdentifier</key>
 		<string>com.apple.Automator.nothing</string>
 		<key>serviceProcessesInput</key>
@@ -205,3 +218,15 @@ exit 0'
 
 build "Compare - Select First" "Compare: Select First" "$SEL" "AA"
 build "Compare - With This" "Compare: With This" "$WITH" "BB"
+# The screenshot Quick Actions only hand the mode to Screenshot Helper.app,
+# which takes the screenshot, so the screen recording grant belongs to that
+# app alone (see screenshot-helper.applescript). -g leaves the app you are
+# in at the front, which is the window a window screenshot starts on.
+SHOT_WINDOW='printf window &gt; "$HOME/.screenshot-helper-mode"
+open -g -a "Screenshot Helper"'
+
+SHOT_SCREEN='printf screen &gt; "$HOME/.screenshot-helper-mode"
+open -g -a "Screenshot Helper"'
+
+build "screenshot-window-or-selection" "Screenshot: Window or Selection" "$SHOT_WINDOW" "CC" global
+build "screenshot-whole-screen" "Screenshot: Whole Screen" "$SHOT_SCREEN" "DD" global
