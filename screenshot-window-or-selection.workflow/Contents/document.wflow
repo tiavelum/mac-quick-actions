@@ -59,7 +59,8 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>screencapture -iWc</string>
+					<string>printf window &gt; "$HOME/.screenshot-helper-mode"
+open -g -a "Screenshot Helper"</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>

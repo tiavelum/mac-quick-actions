@@ -1,15 +1,15 @@
 #!/bin/bash
 # install.sh — put this repo's Quick Actions, their key combinations and
-# the hotkey application in place.
+# the two helper applications in place.
 #
-#   ./install.sh            install the Quick Actions, build the app if absent
-#   ./install.sh --rebuild  rebuild the app even if it already exists
+#   ./install.sh            install the Quick Actions, build the apps if absent
+#   ./install.sh --rebuild  rebuild the apps even if they already exist
 #
-# ⚠️ --rebuild costs you the Accessibility grant. macOS binds the grant to
-# the application at its path *and* to its contents, so a recompiled bundle
-# is a different application as far as permissions are concerned. You will
-# have to re-grant it, and nothing will tell you: the hotkey simply stops
-# doing anything.
+# ⚠️ --rebuild costs you the apps' permission grants (Accessibility, screen
+# recording). macOS binds a grant to the application at its path *and* to
+# its contents, so a recompiled bundle is a different application as far as
+# permissions are concerned. You will have to re-grant, and nothing will
+# tell you: the key simply stops doing anything.
 
 set -e
 cd "$(dirname "$0")"
@@ -17,7 +17,7 @@ cd "$(dirname "$0")"
 REBUILD=0
 [ "${1:-}" = "--rebuild" ] && REBUILD=1
 
-# --- Finder Quick Actions ----------------------------------------------
+# --- Quick Actions ---------------------------------------------------
 mkdir -p ~/Library/Services
 count=0
 for wf in *.workflow; do
@@ -48,30 +48,55 @@ else
   echo "Finder restarted"
 fi
 
-# --- Control Center Toggle.app -----------------------------------------
-# Lives here despite the repository's name: it is the same kind of thing —
-# a small macOS integration built from plain text kept under version
-# control. It must land in /Applications, because moving it after the
-# Accessibility grant silently invalidates the grant.
-APP="/Applications/Control Center Toggle.app"
-SRC="control-center-toggle.applescript"
+# --- Applications ------------------------------------------------------
+# They live here despite the repository's name: they are the same kind of
+# thing — small macOS integrations built from plain text kept under version
+# control. They must land in /Applications, because moving an app after a
+# permission grant silently invalidates the grant.
+#
+# build_app <name> <source> <background>
+#   background 1 hides the app from the Dock and the app switcher; the
+#   bundle is then signed again, since editing Info.plist breaks the
+#   signature osacompile gave it.
+# Returns 1 when the app was left alone.
+build_app() {
+  app="/Applications/$1.app"; src="$2"
+  if [ ! -f "$src" ]; then
+    echo "!! $src missing — $1.app not built" >&2
+    return 1
+  elif [ -d "$app" ] && [ "$REBUILD" -eq 0 ]; then
+    echo "$1.app already present — left alone (--rebuild to replace)"
+    return 1
+  fi
+  [ -d "$app" ] && rm -rf "$app"
+  osacompile -o "$app" "$src"
+  if [ "$3" = 1 ]; then
+    plutil -replace LSUIElement -bool true "$app/Contents/Info.plist"
+    codesign --force --sign - "$app"
+  fi
+  echo "built: $app"
+}
 
-if [ ! -f "$SRC" ]; then
-  echo "!! $SRC missing — hotkey application not built" >&2
-elif [ -d "$APP" ] && [ "$REBUILD" -eq 0 ]; then
-  echo "Control Center Toggle.app already present — left alone (--rebuild to replace)"
-else
-  [ -d "$APP" ] && rm -rf "$APP"
-  osacompile -o "$APP" "$SRC"
-  echo "built: $APP"
+if build_app "Control Center Toggle" control-center-toggle.applescript 0; then
   cat <<'NOTE'
 
-  Two manual steps remain for the hotkey, and neither can be scripted:
+  Two manual steps remain for the Control Center hotkey, and neither can be
+  scripted:
     1. Double-click the app once. macOS prompts for Accessibility; grant it
        under Privacy & Security → Accessibility. Do not test it from
        Automator — that grants the permission to Automator instead.
     2. Shortcuts → new shortcut → action "Open App" → Control Center Toggle
        → ⓘ → Details → Run with → press your key combination.
+NOTE
+fi
+
+if build_app "Screenshot Helper" screenshot-helper.applescript 1; then
+  cat <<'NOTE'
+
+  One manual step remains for the screenshot keys: the first screenshot
+  asks for screen recording permission for "Screenshot Helper". Allow it,
+  and allow it again if macOS asks whether it may bypass the window picker.
+  Grant it to no other app.
 NOTE
 fi
 

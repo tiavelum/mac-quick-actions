@@ -2,12 +2,13 @@
 
 Small macOS integrations generated from plain text and worth versioning:
 two Finder Quick Actions for comparing files in VS Code, two Quick Actions
-that take screenshots from easy key combinations, and a tiny application
-that holds the Accessibility permission for a Control Center hotkey.
+that take screenshots from easy key combinations, and two tiny applications
+that hold the permissions these keys need: Accessibility for a Control
+Center hotkey, screen recording for the screenshots.
 
 ```bash
-./install.sh              # install the Quick Actions; build the app if absent
-./install.sh --rebuild    # rebuild the app (costs the Accessibility grant — see below)
+./install.sh              # install the Quick Actions; build the apps if absent
+./install.sh --rebuild    # rebuild the apps (costs their permission grants — see below)
 ./build.sh                # regenerate the .workflow bundles from the templates
 ```
 
@@ -37,13 +38,21 @@ the clipboard:
 | Keys | Quick Action | Does |
 |---|---|---|
 | Control + Option + Command + Space | Screenshot: Window or Selection | Starts in window mode; Space switches to selection and back |
-| Control + Option + Command + Return | Screenshot: Whole Screen | Captures the screen at once |
+| Control + Option + Command + Return | Screenshot: Whole Screen | Captures the display under the mouse pointer |
 
-`install.sh` installs both and writes their keys to the Services
-preferences. One step stays manual: the first screenshot asks for
-**Screen & System Audio Recording** permission for the process that runs
-the Quick Action; grant it under **Privacy & Security**. Grant it to that
-process only — granting it to Terminal hands it to everything you run there.
+The Quick Actions only pass the mode on; `/Applications/Screenshot
+Helper.app`, built from `screenshot-helper.applescript`, takes the
+screenshot. Run from a Quick Action itself, the capture would ask the app in
+front for screen recording permission — every app in turn — and the
+Automator runner as well; run from the helper, only the helper asks. It has
+no Dock icon and skips a second capture while one is open.
+
+`install.sh` installs the Quick Actions, writes their keys to the Services
+preferences and builds the helper. One step stays manual: the first
+screenshot asks for **Screen & System Audio Recording** permission for
+**Screenshot Helper**, and possibly whether it may bypass the window picker;
+allow both. Grant it to no other app — granting it to Terminal or an editor
+hands it to everything that runs there.
 
 Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
 Services → General. A Quick Action without a key, or with a different one,

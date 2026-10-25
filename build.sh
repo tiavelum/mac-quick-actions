@@ -218,7 +218,15 @@ exit 0'
 
 build "Compare - Select First" "Compare: Select First" "$SEL" "AA"
 build "Compare - With This" "Compare: With This" "$WITH" "BB"
-# -W starts in window mode; Space switches to selection. -c sends the
-# result to the clipboard whatever screenshot destination is set.
-build "screenshot-window-or-selection" "Screenshot: Window or Selection" "screencapture -iWc" "CC" global
-build "screenshot-whole-screen" "Screenshot: Whole Screen" "screencapture -c" "DD" global
+# The screenshot Quick Actions only hand the mode to Screenshot Helper.app,
+# which takes the screenshot, so the screen recording grant belongs to that
+# app alone (see screenshot-helper.applescript). -g leaves the app you are
+# in at the front, which is the window a window screenshot starts on.
+SHOT_WINDOW='printf window &gt; "$HOME/.screenshot-helper-mode"
+open -g -a "Screenshot Helper"'
+
+SHOT_SCREEN='printf screen &gt; "$HOME/.screenshot-helper-mode"
+open -g -a "Screenshot Helper"'
+
+build "screenshot-window-or-selection" "Screenshot: Window or Selection" "$SHOT_WINDOW" "CC" global
+build "screenshot-whole-screen" "Screenshot: Whole Screen" "$SHOT_SCREEN" "DD" global
