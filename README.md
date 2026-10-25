@@ -55,13 +55,39 @@ screen; a running one only receives the key's signal. If that screen ever
 appears, the helper was not running; run `./install.sh` to start it again.
 
 `install.sh` installs the Quick Actions, writes their keys to the Services
-preferences and builds the helper. One step stays manual: the first
-screenshot asks for **Screen & System Audio Recording** permission for
-**Screenshot Helper** and takes no picture. Choose **Open System Settings**,
-switch Screenshot Helper on, and take the screenshot again; if macOS asks
-whether it may bypass the window picker, allow that too. Grant it to no
-other app — granting it to Terminal or an editor hands it to everything that
-runs there.
+preferences and builds the helper. Granting the permission stays manual:
+
+1. Press a screenshot key. macOS asks for **Screen & System Audio
+   Recording** permission for **Screenshot Helper** and takes no picture.
+2. Choose **Open System Settings** and switch Screenshot Helper on. If macOS
+   asks whether it may bypass the window picker, allow that too.
+3. Restart the helper, which keeps the permission state it started with:
+
+   ```bash
+   pkill -f "Screenshot Helper.app/"
+   open -g -a "Screenshot Helper"
+   ```
+
+4. Press the key again; the screenshot lands on the clipboard.
+
+Grant it to no other app — granting it to Terminal or an editor hands it to
+everything that runs there.
+
+### Rebuilding only the helper
+
+`./install.sh --rebuild` also rebuilds Control Center Toggle and costs its
+Accessibility grant. To rebuild only Screenshot Helper, remove it and
+install:
+
+```bash
+pkill -f "Screenshot Helper.app/"
+rm -rf "/Applications/Screenshot Helper.app"
+./install.sh
+```
+
+The rebuilt helper is a new app to macOS: first remove the old **Screenshot
+Helper** entry under Privacy & Security → Screen & System Audio Recording
+with **−**, then grant the permission again as above.
 
 Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
 Services → General. A Quick Action without a key, or with a different one,

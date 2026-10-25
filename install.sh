@@ -103,11 +103,16 @@ if build_app "Screenshot Helper" screenshot-helper.applescript \
      io.github.tiavelum.screenshot-helper; then
   cat <<'NOTE'
 
-  One manual step remains for the screenshot keys: the first screenshot
-  asks for screen recording permission for "Screenshot Helper". Choose
-  Open System Settings, switch it on there, then take the screenshot again;
-  allow it as well if macOS asks whether it may bypass the window picker.
-  Grant it to no other app.
+  One manual step remains for the screenshot keys, granting screen
+  recording permission to "Screenshot Helper" and to no other app:
+    1. If an older "Screenshot Helper" is listed under Privacy & Security →
+       Screen & System Audio Recording, remove it with −.
+    2. Press a screenshot key; choose Open System Settings in the prompt and
+       switch Screenshot Helper on (allow bypassing the window picker too,
+       if asked).
+    3. Restart the helper so it picks up the permission:
+         pkill -f "Screenshot Helper.app/"; open -g -a "Screenshot Helper"
+    4. Press the key again.
 NOTE
 fi
 
