@@ -1,6 +1,6 @@
 #!/bin/bash
-# install.sh — put this repo's Finder Quick Actions and hotkey application
-# in place.
+# install.sh — put this repo's Quick Actions, their key combinations and
+# the hotkey application in place.
 #
 #   ./install.sh            install the Quick Actions, build the app if absent
 #   ./install.sh --rebuild  rebuild the app even if it already exists
@@ -28,9 +28,21 @@ for wf in *.workflow; do
   count=$((count + 1))
 done
 
+# Key combinations of the global Quick Actions. The Services preferences
+# (pbs) key each entry by "(null) - <menu title> - runWorkflowAsService";
+# in a key equivalent ^ is Control, ~ Option, @ Command.
+set_key() {
+  defaults write pbs NSServicesStatus -dict-add \
+    "\"(null) - $1 - runWorkflowAsService\"" \
+    "{ enabled_context_menu = 1; enabled_services_menu = 1; key_equivalent = \"$2\"; }"
+  echo "key set: $1"
+}
+
 if [ "$count" -eq 0 ]; then
   echo "!! no .workflow bundles found — run ./build.sh first" >&2
 else
+  set_key "Screenshot: Window or Selection" '^~@ '
+  set_key "Screenshot: Whole Screen" '^~@\U000d'
   /System/Library/CoreServices/pbs -flush
   killall Finder
   echo "Finder restarted"

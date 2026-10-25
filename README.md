@@ -1,9 +1,9 @@
 # mac-quick-actions
 
 Small macOS integrations generated from plain text and worth versioning:
-two Finder Quick Actions for comparing files in VS Code, and a tiny
-application that holds the Accessibility permission for a Control Center
-hotkey.
+two Finder Quick Actions for comparing files in VS Code, two Quick Actions
+that take screenshots from easy key combinations, and a tiny application
+that holds the Accessibility permission for a Control Center hotkey.
 
 ```bash
 ./install.sh              # install the Quick Actions; build the app if absent
@@ -28,6 +28,26 @@ Search System Settings → Keyboard Shortcuts → Services for the colon form,
 which is also where a service that arrived disabled is switched on and gets
 a shortcut. If an action does nothing, open its bundle in Automator and
 press Run: the log shows the real error.
+
+## Screenshots from the keyboard
+
+Two Quick Actions work in every application and send the screenshot to
+the clipboard:
+
+| Keys | Quick Action | Does |
+|---|---|---|
+| Control + Option + Command + Space | Screenshot: Window or Selection | Starts in window mode; Space switches to selection and back |
+| Control + Option + Command + Return | Screenshot: Whole Screen | Captures the screen at once |
+
+`install.sh` installs both and writes their keys to the Services
+preferences. One step stays manual: the first screenshot asks for
+**Screen & System Audio Recording** permission for the process that runs
+the Quick Action; grant it under **Privacy & Security**. Grant it to that
+process only — granting it to Terminal hands it to everything you run there.
+
+Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
+Services → General. A Quick Action without a key, or with a different one,
+gets it there by double-clicking the key column.
 
 ## Control Center Toggle.app
 
