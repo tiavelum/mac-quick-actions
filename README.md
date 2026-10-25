@@ -47,6 +47,13 @@ front for screen recording permission — every app in turn — and the
 Automator runner as well; run from the helper, only the helper asks. It has
 no Dock icon and skips a second capture while one is open.
 
+The helper stays running, started at login by the launch agent
+`~/Library/LaunchAgents/io.github.tiavelum.screenshot-helper.plist`, which
+`install.sh` writes. An AppleScript app launched while Control is held — as
+every screenshot key does — stops at a "Press Run to run this script"
+screen; a running one only receives the key's signal. If that screen ever
+appears, the helper was not running; run `./install.sh` to start it again.
+
 `install.sh` installs the Quick Actions, writes their keys to the Services
 preferences and builds the helper. One step stays manual: the first
 screenshot asks for **Screen & System Audio Recording** permission for

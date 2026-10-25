@@ -6,6 +6,11 @@
 -- screencapture would ask the app in front, whichever it is, and the
 -- Automator runner as well. Run from this app, only this app asks.
 --
+-- The app stays open in the background, started at login by a launch
+-- agent. An applet launched while Control is held shows its "Press Run to
+-- run this script" screen, and every screenshot key holds Control; an app
+-- that is already running only receives a reopen event, which shows nothing.
+--
 -- The Quick Action writes the mode to ~/.screenshot-helper-mode and opens
 -- the app; an applet opened with `open` cannot read command-line
 -- arguments. Modes: "window" (window first, Space switches to selection)
@@ -14,12 +19,25 @@
 use framework "AppKit"
 use scripting additions
 
+on modeFile()
+	return POSIX path of (path to home folder) & ".screenshot-helper-mode"
+end modeFile
+
+-- At login there is nothing to capture; a mode left from before is stale.
 on run
-	set modeFile to POSIX path of (path to home folder) & ".screenshot-helper-mode"
-	set mode to "window"
+	do shell script "rm -f " & quoted form of (my modeFile())
+end run
+
+on reopen
+	my takeScreenshot()
+end reopen
+
+on takeScreenshot()
+	set mode to ""
 	try
-		set mode to do shell script "cat " & quoted form of modeFile & "; rm -f " & quoted form of modeFile
+		set mode to do shell script "cat " & quoted form of (my modeFile()) & "; rm -f " & quoted form of (my modeFile())
 	end try
+	if mode is "" then return
 
 	-- A second capture while one is open fails with "cannot run two
 	-- interactive screen captures at a time"; skip it instead.
@@ -37,7 +55,7 @@ on run
 			do shell script "screencapture -iWc"
 		end if
 	end try
-end run
+end takeScreenshot
 
 -- screencapture numbers displays from 1, in the order NSScreen lists them,
 -- the main display first.

@@ -55,11 +55,11 @@ fi
 # permission grant silently invalidates the grant.
 #
 # build_app <name> <source> [<bundle identifier>]
-#   With a bundle identifier, the app runs in the background (no Dock icon,
-#   not in the app switcher) and carries its own name and identifier, so a
-#   permission prompt names it instead of osacompile's generic "applet".
-#   The bundle is then signed again, since editing Info.plist breaks the
-#   signature osacompile gave it.
+#   With a bundle identifier, the app stays open in the background (no Dock
+#   icon, not in the app switcher) and carries its own name and identifier,
+#   so a permission prompt names it instead of osacompile's generic
+#   "applet". The bundle is then signed again, since editing Info.plist
+#   breaks the signature osacompile gave it.
 # Returns 1 when the app was left alone.
 build_app() {
   app="/Applications/$1.app"; src="$2"
@@ -70,9 +70,12 @@ build_app() {
     echo "$1.app already present — left alone (--rebuild to replace)"
     return 1
   fi
+  pkill -f "$app/" 2>/dev/null || true
   [ -d "$app" ] && rm -rf "$app"
-  osacompile -o "$app" "$src"
-  if [ -n "${3:-}" ]; then
+  if [ -z "${3:-}" ]; then
+    osacompile -o "$app" "$src"
+  else
+    osacompile -s -o "$app" "$src"
     info="$app/Contents/Info.plist"
     plutil -replace LSUIElement -bool true "$info"
     plutil -replace CFBundleIdentifier -string "$3" "$info"
@@ -107,5 +110,33 @@ if build_app "Screenshot Helper" screenshot-helper.applescript \
   Grant it to no other app.
 NOTE
 fi
+
+# Screenshot Helper starts at login, so that the screenshot keys always
+# find it running (see screenshot-helper.applescript for why).
+AGENT=io.github.tiavelum.screenshot-helper
+PLIST="$HOME/Library/LaunchAgents/$AGENT.plist"
+mkdir -p "$HOME/Library/LaunchAgents"
+cat > "$PLIST" <<AGENT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>$AGENT</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/open</string>
+		<string>-g</string>
+		<string>-a</string>
+		<string>Screenshot Helper</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>
+AGENT
+launchctl bootout "gui/$(id -u)/$AGENT" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$PLIST"
+echo "login item set: Screenshot Helper (running now)"
 
 echo "done"
