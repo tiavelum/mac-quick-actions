@@ -50,9 +50,11 @@ no Dock icon and skips a second capture while one is open.
 `install.sh` installs the Quick Actions, writes their keys to the Services
 preferences and builds the helper. One step stays manual: the first
 screenshot asks for **Screen & System Audio Recording** permission for
-**Screenshot Helper**, and possibly whether it may bypass the window picker;
-allow both. Grant it to no other app — granting it to Terminal or an editor
-hands it to everything that runs there.
+**Screenshot Helper** and takes no picture. Choose **Open System Settings**,
+switch Screenshot Helper on, and take the screenshot again; if macOS asks
+whether it may bypass the window picker, allow that too. Grant it to no
+other app — granting it to Terminal or an editor hands it to everything that
+runs there.
 
 Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
 Services → General. A Quick Action without a key, or with a different one,

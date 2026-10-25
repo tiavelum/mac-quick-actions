@@ -28,11 +28,15 @@ on run
 		return
 	end try
 
-	if mode is "screen" then
-		do shell script "screencapture -c -D " & (my displayUnderPointer())
-	else
-		do shell script "screencapture -iWc"
-	end if
+	-- A cancelled capture (Esc) or one refused for want of permission ends
+	-- with an error; the screenshot is simply not taken, so no dialog.
+	try
+		if mode is "screen" then
+			do shell script "screencapture -c -D " & (my displayUnderPointer())
+		else
+			do shell script "screencapture -iWc"
+		end if
+	end try
 end run
 
 -- screencapture numbers displays from 1, in the order NSScreen lists them,

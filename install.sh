@@ -54,9 +54,11 @@ fi
 # control. They must land in /Applications, because moving an app after a
 # permission grant silently invalidates the grant.
 #
-# build_app <name> <source> <background>
-#   background 1 hides the app from the Dock and the app switcher; the
-#   bundle is then signed again, since editing Info.plist breaks the
+# build_app <name> <source> [<bundle identifier>]
+#   With a bundle identifier, the app runs in the background (no Dock icon,
+#   not in the app switcher) and carries its own name and identifier, so a
+#   permission prompt names it instead of osacompile's generic "applet".
+#   The bundle is then signed again, since editing Info.plist breaks the
 #   signature osacompile gave it.
 # Returns 1 when the app was left alone.
 build_app() {
@@ -70,14 +72,18 @@ build_app() {
   fi
   [ -d "$app" ] && rm -rf "$app"
   osacompile -o "$app" "$src"
-  if [ "$3" = 1 ]; then
-    plutil -replace LSUIElement -bool true "$app/Contents/Info.plist"
-    codesign --force --sign - "$app"
+  if [ -n "${3:-}" ]; then
+    info="$app/Contents/Info.plist"
+    plutil -replace LSUIElement -bool true "$info"
+    plutil -replace CFBundleIdentifier -string "$3" "$info"
+    plutil -replace CFBundleName -string "$1" "$info"
+    plutil -replace CFBundleDisplayName -string "$1" "$info"
+    codesign --force --sign - "$app" 2>/dev/null
   fi
   echo "built: $app"
 }
 
-if build_app "Control Center Toggle" control-center-toggle.applescript 0; then
+if build_app "Control Center Toggle" control-center-toggle.applescript; then
   cat <<'NOTE'
 
   Two manual steps remain for the Control Center hotkey, and neither can be
@@ -90,12 +96,14 @@ if build_app "Control Center Toggle" control-center-toggle.applescript 0; then
 NOTE
 fi
 
-if build_app "Screenshot Helper" screenshot-helper.applescript 1; then
+if build_app "Screenshot Helper" screenshot-helper.applescript \
+     io.github.tiavelum.screenshot-helper; then
   cat <<'NOTE'
 
   One manual step remains for the screenshot keys: the first screenshot
-  asks for screen recording permission for "Screenshot Helper". Allow it,
-  and allow it again if macOS asks whether it may bypass the window picker.
+  asks for screen recording permission for "Screenshot Helper". Choose
+  Open System Settings, switch it on there, then take the screenshot again;
+  allow it as well if macOS asks whether it may bypass the window picker.
   Grant it to no other app.
 NOTE
 fi
