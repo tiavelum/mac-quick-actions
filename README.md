@@ -157,3 +157,15 @@ rm -rf "/Applications/Key Helper.app"
 The rebuilt app is a new app to macOS: first remove the old **Key Helper**
 entry under Privacy & Security → Accessibility with **−**, then grant it
 again as above.
+
+## The two entries in Login Items
+
+System Settings → General → Login Items & Extensions → *App Background
+Activity* lists the two launch agents as **Key Helper** and **Screenshot
+Helper**, marked as from an unidentified developer because the apps are
+signed ad hoc. Keep both switched on: switched off, its helper is not
+running after the next login, and its keys stop at the "Press Run" screen.
+
+Each agent runs `/usr/bin/open` through a link named after its app, in
+`~/Library/Application Support/mac-quick-actions/`, because the list names
+an agent after the program it starts.

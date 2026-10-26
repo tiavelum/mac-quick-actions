@@ -128,12 +128,21 @@ fi
 # start_at_login <app name> <bundle identifier, also the agent's label>
 # An app built before it became a background app carries another
 # identifier; started at login, it would run its old action instead.
+#
+# Login Items & Extensions names an agent after the file its first program
+# argument names, so the agent runs /usr/bin/open through a link named
+# after the app: the entry then reads "Key Helper", not "open". The launchd
+# key meant for this, AssociatedBundleIdentifiers, is ignored for apps that
+# are signed ad hoc, as these are.
+LINKS="$HOME/Library/Application Support/mac-quick-actions"
 start_at_login() {
   id=$(plutil -extract CFBundleIdentifier raw "/Applications/$1.app/Contents/Info.plist" 2>/dev/null || true)
   if [ "$id" != "$2" ]; then
     echo "!! $1.app is an older build — not started at login; rebuild it (see README)" >&2
     return 0
   fi
+  mkdir -p "$LINKS"
+  ln -sfn /usr/bin/open "$LINKS/$1"
   plist="$HOME/Library/LaunchAgents/$2.plist"
   mkdir -p "$HOME/Library/LaunchAgents"
   cat > "$plist" <<AGENT
@@ -145,7 +154,7 @@ start_at_login() {
 	<string>$2</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/bin/open</string>
+		<string>$LINKS/$1</string>
 		<string>-g</string>
 		<string>-a</string>
 		<string>$1</string>
