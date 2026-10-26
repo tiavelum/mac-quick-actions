@@ -230,3 +230,9 @@ open -g -a "Screenshot Helper"'
 
 build "screenshot-window-or-selection" "Screenshot: Window or Selection" "$SHOT_WINDOW" "CC" global
 build "screenshot-whole-screen" "Screenshot: Whole Screen" "$SHOT_SCREEN" "DD" global
+
+# Control Center Toggle.app clicks Control Center open; like Screenshot
+# Helper it stays running, so the Quick Action only signals it. System
+# Settings needs no helper: opening an app needs no permission.
+build "show-control-center" "Show Control Center" 'open -g -a "Control Center Toggle"' "EE" global
+build "show-system-settings" "Show System Settings" 'open -b com.apple.systempreferences' "FF" global
