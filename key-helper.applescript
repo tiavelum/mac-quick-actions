@@ -67,26 +67,45 @@ end openControlCenter
 -- Shift, Control, Option and Command (bits 17 to 20 of NSEvent's
 -- modifierFlags); Caps Lock does not count.
 on openClipboardHistory()
+	my debugLog("start, modifiers " & (current application's NSEvent's modifierFlags() as integer))
 	repeat 40 times
 		if (current application's NSEvent's modifierFlags() as integer) mod 2097152 div 131072 is 0 then exit repeat
 		delay 0.05
 	end repeat
+	my debugLog("modifiers released: " & (current application's NSEvent's modifierFlags() as integer))
 	tell application "System Events"
+		my debugLog("before: spotlight windows " & my spotlightWindows() & ", frontmost " & (name of first process whose frontmost is true))
 		if not my spotlightIsOpen() then key code 49 using command down
+		set waited to 0
 		repeat 40 times
 			if my spotlightIsOpen() then exit repeat
 			delay 0.05
+			set waited to waited + 1
 		end repeat
-		keystroke "4" using command down
+		my debugLog("after " & waited & " polls: spotlight windows " & my spotlightWindows() & ", frontmost " & (name of first process whose frontmost is true))
+		key code 21 using command down
+		delay 0.3
+		my debugLog("after Command + 4: spotlight windows " & my spotlightWindows())
 	end tell
 end openClipboardHistory
 
 on spotlightIsOpen()
+	set n to my spotlightWindows()
+	if class of n is integer then return n > 0
+	return false
+end spotlightIsOpen
+
+on spotlightWindows()
 	tell application "System Events"
 		try
-			return (count of windows of process "Spotlight") > 0
-		on error
-			return false
+			return count of windows of process "Spotlight"
+		on error e
+			return "error: " & e
 		end try
 	end tell
-end spotlightIsOpen
+end spotlightWindows
+
+-- Temporary, for finding why Command + 4 does not land; removed before merge.
+on debugLog(msg)
+	do shell script "printf '%s %s\\n' \"$(date +%T)\" " & quoted form of msg & " >> ~/Library/Logs/key-helper-debug.log"
+end debugLog
