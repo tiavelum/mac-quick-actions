@@ -121,8 +121,9 @@ then Command + 4. Both need Accessibility, which macOS grants to a *running
 application*, never to a script, so the Quick Actions hand the mode to
 `/Applications/Key Helper.app`, built from `key-helper.applescript`. For the
 clipboard history it waits until the keys you pressed are released, presses
-Command + Space, waits until Spotlight's window is open and presses
-Command + 4; each wait gives up after two seconds. Spotlight's clipboard
+Command + Space, waits until Spotlight's search field takes keys, presses
+Command + 4 and checks that the clipboard history shows, pressing it once
+more if not; each wait gives up after two seconds. Spotlight's clipboard
 history must be switched on (System Settings → Spotlight → Results from
 Clipboard).
 
@@ -133,7 +134,9 @@ because an AppleScript app launched while Control is held stops at its
 
 1. Press Control + Command + Return. macOS asks for **Accessibility** for
    **Key Helper**, and whether it may control System Events; allow both under
-   Privacy & Security.
+   Privacy & Security. If no prompt appears, add the app yourself: under
+   Privacy & Security → Accessibility, click **+**, choose **Applications →
+   Key Helper**, and switch it on.
 2. Restart the app, which keeps the permission state it started with:
 
    ```bash

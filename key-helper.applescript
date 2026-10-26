@@ -60,105 +60,70 @@ end openControlCenter
 
 -- Command + Space opens Spotlight, Command + 4 switches it to the
 -- clipboard history. Each step waits for a condition rather than a fixed
--- time: modifiers still held from the Quick Action's key would mix into
--- the simulated Command + Space (Control + Option + Command + Space is a
--- screenshot key), and Command + 4 only lands once Spotlight's window
--- exists. Each wait gives up after two seconds. The flags tested are
--- Shift, Control, Option and Command (bits 17 to 20 of NSEvent's
--- modifierFlags); Caps Lock does not count.
+-- time, and gives up after two seconds:
+--   1. the modifiers of the Quick Action's key are released — held, they
+--      would mix into the simulated Command + Space (Control + Option +
+--      Command + Space is a screenshot key). The flags tested are Shift,
+--      Control, Option and Command, bits 17 to 20 of NSEvent's
+--      modifierFlags;
+--   2. Spotlight's search field has keyboard focus — its window exists
+--      before it takes keys, and Command + 4 sent then is lost;
+--   3. the clipboard history shows, recognised by the Back button Spotlight
+--      adds to any view other than search; if it does not, Command + 4 is
+--      sent once more.
+-- Spotlight never becomes the frontmost app, so "frontmost" cannot be the
+-- condition.
 on openClipboardHistory()
-	my debugLog("start, modifiers " & (current application's NSEvent's modifierFlags() as integer))
 	repeat 40 times
 		if (current application's NSEvent's modifierFlags() as integer) mod 2097152 div 131072 is 0 then exit repeat
 		delay 0.05
 	end repeat
-	my debugLog("modifiers released: " & (current application's NSEvent's modifierFlags() as integer))
+	my debugLog("modifiers released")
 	tell application "System Events"
-		my debugLog("before: spotlight windows " & my spotlightWindows() & ", frontmost " & (name of first process whose frontmost is true))
-		if not my spotlightIsOpen() then key code 49 using command down
-		set waited to 0
+		if not my spotlightFieldFocused() then key code 49 using command down
+		set n to 0
 		repeat 40 times
-			if my spotlightIsOpen() then exit repeat
+			if my spotlightFieldFocused() then exit repeat
 			delay 0.05
-			set waited to waited + 1
+			set n to n + 1
 		end repeat
-		my debugLog("after " & waited & " polls: spotlight windows " & my spotlightWindows() & ", frontmost " & (name of first process whose frontmost is true))
-		my debugLog("window attributes: " & my windowState())
-		my debugLog("elements: " & my uiDump())
-		key code 21 using command down
-		delay 0.5
-		my debugLog("after Command + 4, elements: " & my uiDump())
+		my debugLog("field focused after " & n & " polls")
+		repeat with attempt from 1 to 2
+			key code 21 using command down
+			set n to 0
+			repeat 40 times
+				if my clipboardShown() then exit repeat
+				delay 0.05
+				set n to n + 1
+			end repeat
+			my debugLog("attempt " & attempt & ": clipboard shown " & my clipboardShown() & " after " & n & " polls")
+			if my clipboardShown() then exit repeat
+		end repeat
 	end tell
 end openClipboardHistory
 
-on spotlightIsOpen()
-	set n to my spotlightWindows()
-	if class of n is integer then return n > 0
-	return false
-end spotlightIsOpen
-
-on spotlightWindows()
+-- The search field and the Back button sit in the window's first group;
+-- asking for them there stays fast, while "entire contents" walks every
+-- result row.
+on spotlightFieldFocused()
 	tell application "System Events"
 		try
-			return count of windows of process "Spotlight"
-		on error e
-			return "error: " & e
+			return value of attribute "AXFocused" of (first text field of group 1 of window 1 of process "Spotlight")
 		end try
 	end tell
-end spotlightWindows
+	return false
+end spotlightFieldFocused
+
+on clipboardShown()
+	tell application "System Events"
+		try
+			return exists (first button of group 1 of window 1 of process "Spotlight" whose description is "Back")
+		end try
+	end tell
+	return false
+end clipboardShown
 
 -- Temporary, for finding why Command + 4 does not land; removed before merge.
-on windowState()
-	tell application "System Events"
-		try
-			tell window 1 of process "Spotlight"
-				set out to ""
-				repeat with a in {"AXFocused", "AXMain", "AXRole", "AXSubrole", "AXTitle"}
-					try
-						set out to out & a & "=" & (value of attribute a as text) & " "
-					on error
-						set out to out & a & "=? "
-					end try
-				end repeat
-				return out
-			end tell
-		on error e
-			return "error: " & e
-		end try
-	end tell
-end windowState
-
-on uiDump()
-	tell application "System Events"
-		try
-			set out to ""
-			set els to entire contents of window 1 of process "Spotlight"
-			repeat with el in els
-				set r to ""
-				try
-					set r to role of el
-				end try
-				set d to ""
-				try
-					set d to description of el
-				end try
-				set t to ""
-				try
-					set t to (value of attribute "AXIdentifier" of el) as text
-				end try
-				set f to ""
-				try
-					if (value of attribute "AXFocused" of el) then set f to "*"
-				end try
-				set out to out & "[" & r & "|" & d & "|" & t & f & "] "
-			end repeat
-			return out
-		on error e
-			return "error: " & e
-		end try
-	end tell
-end uiDump
-
 on debugLog(msg)
 	do shell script "printf '%s %s\\n' \"$(date +%T)\" " & quoted form of msg & " >> ~/Library/Logs/key-helper-debug.log"
 end debugLog
