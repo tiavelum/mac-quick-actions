@@ -46,6 +46,7 @@ else
   set_key "Show Control Center" '^@\U000d'
   set_key "Show System Settings" '^$@\U000d'
   set_key "Quick Look Clipboard" '^~@-'
+  set_key "Show Clipboard History" '^~@\U0008'
   /System/Library/CoreServices/pbs -flush
   killall Finder
   echo "Finder restarted"
@@ -89,18 +90,17 @@ build_app() {
   echo "built: $app"
 }
 
-if build_app "Control Center Toggle" control-center-toggle.applescript \
-     io.github.tiavelum.control-center-toggle; then
+if build_app "Key Helper" key-helper.applescript io.github.tiavelum.key-helper; then
   cat <<'NOTE'
 
-  One manual step remains for the Control Center key, granting
-  Accessibility to "Control Center Toggle":
-    1. If an older "Control Center Toggle" is listed under Privacy &
-       Security → Accessibility, remove it with −.
-    2. Press Control + Command + Return; allow Control Center Toggle in the
-       Accessibility prompt (and to control System Events, if asked).
+  One manual step remains for the Control Center and clipboard history
+  keys, granting Accessibility to "Key Helper":
+    1. If an older "Key Helper" is listed under Privacy & Security →
+       Accessibility, remove it with −.
+    2. Press Control + Command + Return; allow Key Helper in the
+       Accessibility prompt, and to control System Events when asked.
     3. Restart the app so it picks up the permission:
-         pkill -f "Control Center Toggle.app/"; open -g -a "Control Center Toggle"
+         pkill -f "Key Helper.app/"; open -g -a "Key Helper"
     4. Press the key again.
 NOTE
 fi
@@ -159,7 +159,7 @@ AGENT
   echo "login item set: $1 (running now)"
 }
 
-start_at_login "Control Center Toggle" io.github.tiavelum.control-center-toggle
+start_at_login "Key Helper" io.github.tiavelum.key-helper
 start_at_login "Screenshot Helper" io.github.tiavelum.screenshot-helper
 
 echo "done"

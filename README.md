@@ -1,11 +1,12 @@
 # mac-quick-actions
 
 Small macOS integrations generated from plain text and worth versioning:
-two Finder Quick Actions for comparing files in VS Code, five Quick Actions
+two Finder Quick Actions for comparing files in VS Code, six Quick Actions
 on easy key combinations (two screenshots, Quick Look of the clipboard,
-Control Center, System Settings), and two tiny background applications that hold the permissions those keys
-need: screen recording for the screenshots, Accessibility for Control
-Center.
+clipboard history, Control Center, System Settings), and two tiny
+background applications that hold the permissions those keys need: screen
+recording for the screenshots, Accessibility for Control Center and the
+clipboard history.
 
 ```bash
 ./install.sh              # install the Quick Actions; build the apps if absent
@@ -104,47 +105,52 @@ Quick Look previews files only, so `quick-look-clipboard.sh`, which
 `build.sh` embeds in the Quick Action, writes the item to a temporary file
 first. No permission is needed.
 
-## Control Center and System Settings from the keyboard
+## Control Center, System Settings and clipboard history from the keyboard
 
 | Keys | Quick Action | Does |
 |---|---|---|
 | Control + Command + Return | Show Control Center | Opens Control Center |
 | Control + Shift + Command + Return | Show System Settings | Opens System Settings |
+| Control + Option + Command + Backspace | Show Clipboard History | Opens Spotlight at its clipboard history |
 
 Show System Settings opens the app directly and needs no permission.
 
-Control Center has no keyboard shortcut of its own and can only be opened by
-clicking its menu bar item. macOS grants the Accessibility that this takes
-to a *running application*, never to a script, so the Quick Action signals
-`/Applications/Control Center Toggle.app`, built from
-`control-center-toggle.applescript`. Like Screenshot Helper, it runs in the
-background, started at login by the launch agent
-`~/Library/LaunchAgents/io.github.tiavelum.control-center-toggle.plist`,
+Control Center has no keyboard shortcut of its own and opens only by a click
+on its menu bar item; Spotlight's clipboard history takes Command + Space,
+then Command + 4. Both need Accessibility, which macOS grants to a *running
+application*, never to a script, so the Quick Actions hand the mode to
+`/Applications/Key Helper.app`, built from `key-helper.applescript`. For the
+clipboard history it waits until the keys you pressed are released, presses
+Command + Space, waits until Spotlight's window is open and presses
+Command + 4; each wait gives up after two seconds. Spotlight's clipboard
+history must be switched on (System Settings → Spotlight → Results from
+Clipboard).
+
+Like Screenshot Helper, Key Helper runs in the background, started at login
+by the launch agent `~/Library/LaunchAgents/io.github.tiavelum.key-helper.plist`,
 because an AppleScript app launched while Control is held stops at its
 "Press Run" screen. Granting Accessibility stays manual:
 
 1. Press Control + Command + Return. macOS asks for **Accessibility** for
-   **Control Center Toggle**, and possibly whether it may control System
-   Events; allow both under Privacy & Security.
+   **Key Helper**, and whether it may control System Events; allow both under
+   Privacy & Security.
 2. Restart the app, which keeps the permission state it started with:
 
    ```bash
-   pkill -f "Control Center Toggle.app/"
-   open -g -a "Control Center Toggle"
+   pkill -f "Key Helper.app/"
+   open -g -a "Key Helper"
    ```
 
 3. Press the key again; Control Center opens.
 
-### Rebuilding only Control Center Toggle
+### Rebuilding only Key Helper
 
 ```bash
-pkill -f "Control Center Toggle.app/"
-rm -rf "/Applications/Control Center Toggle.app"
+pkill -f "Key Helper.app/"
+rm -rf "/Applications/Key Helper.app"
 ./install.sh
 ```
 
-The rebuilt app is a new app to macOS: first remove the old **Control Center
-Toggle** entry under Privacy & Security → Accessibility with **−**, then
-grant it again as above. `install.sh` does not start an app built before it
-became a background app at login; it says so, and rebuilding it this way
-fixes that.
+The rebuilt app is a new app to macOS: first remove the old **Key Helper**
+entry under Privacy & Security → Accessibility with **−**, then grant it
+again as above.

@@ -59,7 +59,8 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>open -g -a "Control Center Toggle"</string>
+					<string>printf control-center &gt; "$HOME/.key-helper-mode"
+open -g -a "Key Helper"</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>

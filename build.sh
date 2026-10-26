@@ -231,11 +231,19 @@ open -g -a "Screenshot Helper"'
 build "screenshot-window-or-selection" "Screenshot: Window or Selection" "$SHOT_WINDOW" "CC" global
 build "screenshot-whole-screen" "Screenshot: Whole Screen" "$SHOT_SCREEN" "DD" global
 
-# Control Center Toggle.app clicks Control Center open; like Screenshot
-# Helper it stays running, so the Quick Action only signals it. System
-# Settings needs no helper: opening an app needs no permission.
-build "show-control-center" "Show Control Center" 'open -g -a "Control Center Toggle"' "EE" global
+# Key Helper.app clicks Control Center open and presses the keys that open
+# Spotlight's clipboard history; like Screenshot Helper it stays running,
+# so the Quick Actions only hand it the mode (see key-helper.applescript).
+# System Settings needs no helper: opening an app needs no permission.
+KEY_CONTROL_CENTER='printf control-center &gt; "$HOME/.key-helper-mode"
+open -g -a "Key Helper"'
+
+KEY_CLIPBOARD_HISTORY='printf clipboard-history &gt; "$HOME/.key-helper-mode"
+open -g -a "Key Helper"'
+
+build "show-control-center" "Show Control Center" "$KEY_CONTROL_CENTER" "EE" global
 build "show-system-settings" "Show System Settings" 'open -b com.apple.systempreferences' "FF" global
+build "show-clipboard-history" "Show Clipboard History" "$KEY_CLIPBOARD_HISTORY" "HH" global
 
 # The script lives in its own file for readability; it is embedded here
 # with the characters XML reserves escaped, as the other scripts are.
