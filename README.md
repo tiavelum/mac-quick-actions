@@ -1,10 +1,11 @@
 # mac-quick-actions
 
 Small macOS integrations generated from plain text and worth versioning:
-two Finder Quick Actions for comparing files in VS Code, two Quick Actions
-that take screenshots from easy key combinations, and two tiny applications
-that hold the permissions these keys need: Accessibility for a Control
-Center hotkey, screen recording for the screenshots.
+two Finder Quick Actions for comparing files in VS Code, four Quick Actions
+on easy key combinations (two screenshots, Control Center, System Settings),
+and two tiny background applications that hold the permissions those keys
+need: screen recording for the screenshots, Accessibility for Control
+Center.
 
 ```bash
 ./install.sh              # install the Quick Actions; build the apps if absent
@@ -75,9 +76,8 @@ everything that runs there.
 
 ### Rebuilding only the helper
 
-`./install.sh --rebuild` also rebuilds Control Center Toggle and costs its
-Accessibility grant. To rebuild only Screenshot Helper, remove it and
-install:
+`./install.sh --rebuild` rebuilds both apps and costs both their
+permission grants. To rebuild only Screenshot Helper, remove it and install:
 
 ```bash
 pkill -f "Screenshot Helper.app/"
@@ -93,20 +93,47 @@ Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
 Services → General. A Quick Action without a key, or with a different one,
 gets it there by double-clicking the key column.
 
-## Control Center Toggle.app
+## Control Center and System Settings from the keyboard
 
-macOS grants Accessibility to a *running application*, never to a script,
-so a hotkey that drives the menu bar needs an app for the grant to attach
-to. `install.sh` compiles `control-center-toggle.applescript` into
-`/Applications/Control Center Toggle.app`. Two steps stay manual:
+| Keys | Quick Action | Does |
+|---|---|---|
+| Control + Command + Return | Show Control Center | Opens Control Center |
+| Control + Shift + Command + Return | Show System Settings | Opens System Settings |
 
-1. Launch the app once and grant it under **Privacy & Security →
-   Accessibility** — do not test it from Automator, that grants Automator.
-2. **Shortcuts** → new shortcut → **Open App** → *Control Center Toggle* →
-   ⓘ → **Run with** → your key combination.
+Show System Settings opens the app directly and needs no permission.
 
-The grant is bound to the app's path *and* contents: moving the app or
-running `--rebuild` silently invalidates it while the toggle still looks
-on. Remove the entry with **−**, launch, re-grant. If access is still denied
-with the toggle on: `tccutil reset Accessibility <bundle-id>`, then re-grant.
-A hotkey that only beeps never reached the app — pick another combination.
+Control Center has no keyboard shortcut of its own and can only be opened by
+clicking its menu bar item. macOS grants the Accessibility that this takes
+to a *running application*, never to a script, so the Quick Action signals
+`/Applications/Control Center Toggle.app`, built from
+`control-center-toggle.applescript`. Like Screenshot Helper, it runs in the
+background, started at login by the launch agent
+`~/Library/LaunchAgents/io.github.tiavelum.control-center-toggle.plist`,
+because an AppleScript app launched while Control is held stops at its
+"Press Run" screen. Granting Accessibility stays manual:
+
+1. Press Control + Command + Return. macOS asks for **Accessibility** for
+   **Control Center Toggle**, and possibly whether it may control System
+   Events; allow both under Privacy & Security.
+2. Restart the app, which keeps the permission state it started with:
+
+   ```bash
+   pkill -f "Control Center Toggle.app/"
+   open -g -a "Control Center Toggle"
+   ```
+
+3. Press the key again; Control Center opens.
+
+### Rebuilding only Control Center Toggle
+
+```bash
+pkill -f "Control Center Toggle.app/"
+rm -rf "/Applications/Control Center Toggle.app"
+./install.sh
+```
+
+The rebuilt app is a new app to macOS: first remove the old **Control Center
+Toggle** entry under Privacy & Security → Accessibility with **−**, then
+grant it again as above. `install.sh` does not start an app built before it
+became a background app at login; it says so, and rebuilding it this way
+fixes that.

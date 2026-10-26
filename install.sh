@@ -30,7 +30,7 @@ done
 
 # Key combinations of the global Quick Actions. The Services preferences
 # (pbs) key each entry by "(null) - <menu title> - runWorkflowAsService";
-# in a key equivalent ^ is Control, ~ Option, @ Command.
+# in a key equivalent ^ is Control, ~ Option, $ Shift, @ Command.
 set_key() {
   defaults write pbs NSServicesStatus -dict-add \
     "\"(null) - $1 - runWorkflowAsService\"" \
@@ -43,6 +43,8 @@ if [ "$count" -eq 0 ]; then
 else
   set_key "Screenshot: Window or Selection" '^~@ '
   set_key "Screenshot: Whole Screen" '^~@\U000d'
+  set_key "Show Control Center" '^@\U000d'
+  set_key "Show System Settings" '^$@\U000d'
   /System/Library/CoreServices/pbs -flush
   killall Finder
   echo "Finder restarted"
@@ -86,16 +88,19 @@ build_app() {
   echo "built: $app"
 }
 
-if build_app "Control Center Toggle" control-center-toggle.applescript; then
+if build_app "Control Center Toggle" control-center-toggle.applescript \
+     io.github.tiavelum.control-center-toggle; then
   cat <<'NOTE'
 
-  Two manual steps remain for the Control Center hotkey, and neither can be
-  scripted:
-    1. Double-click the app once. macOS prompts for Accessibility; grant it
-       under Privacy & Security → Accessibility. Do not test it from
-       Automator — that grants the permission to Automator instead.
-    2. Shortcuts → new shortcut → action "Open App" → Control Center Toggle
-       → ⓘ → Details → Run with → press your key combination.
+  One manual step remains for the Control Center key, granting
+  Accessibility to "Control Center Toggle":
+    1. If an older "Control Center Toggle" is listed under Privacy &
+       Security → Accessibility, remove it with −.
+    2. Press Control + Command + Return; allow Control Center Toggle in the
+       Accessibility prompt (and to control System Events, if asked).
+    3. Restart the app so it picks up the permission:
+         pkill -f "Control Center Toggle.app/"; open -g -a "Control Center Toggle"
+    4. Press the key again.
 NOTE
 fi
 
@@ -116,32 +121,44 @@ if build_app "Screenshot Helper" screenshot-helper.applescript \
 NOTE
 fi
 
-# Screenshot Helper starts at login, so that the screenshot keys always
-# find it running (see screenshot-helper.applescript for why).
-AGENT=io.github.tiavelum.screenshot-helper
-PLIST="$HOME/Library/LaunchAgents/$AGENT.plist"
-mkdir -p "$HOME/Library/LaunchAgents"
-cat > "$PLIST" <<AGENT
+# Both apps start at login, so that their keys always find them running
+# (see either .applescript for why).
+# start_at_login <app name> <bundle identifier, also the agent's label>
+# An app built before it became a background app carries another
+# identifier; started at login, it would run its old action instead.
+start_at_login() {
+  id=$(plutil -extract CFBundleIdentifier raw "/Applications/$1.app/Contents/Info.plist" 2>/dev/null || true)
+  if [ "$id" != "$2" ]; then
+    echo "!! $1.app is an older build — not started at login; rebuild it (see README)" >&2
+    return 0
+  fi
+  plist="$HOME/Library/LaunchAgents/$2.plist"
+  mkdir -p "$HOME/Library/LaunchAgents"
+  cat > "$plist" <<AGENT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>$AGENT</string>
+	<string>$2</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>/usr/bin/open</string>
 		<string>-g</string>
 		<string>-a</string>
-		<string>Screenshot Helper</string>
+		<string>$1</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
 </dict>
 </plist>
 AGENT
-launchctl bootout "gui/$(id -u)/$AGENT" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$PLIST"
-echo "login item set: Screenshot Helper (running now)"
+  launchctl bootout "gui/$(id -u)/$2" 2>/dev/null || true
+  launchctl bootstrap "gui/$(id -u)" "$plist"
+  echo "login item set: $1 (running now)"
+}
+
+start_at_login "Control Center Toggle" io.github.tiavelum.control-center-toggle
+start_at_login "Screenshot Helper" io.github.tiavelum.screenshot-helper
 
 echo "done"
