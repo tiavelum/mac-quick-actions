@@ -83,9 +83,11 @@ on openClipboardHistory()
 			set waited to waited + 1
 		end repeat
 		my debugLog("after " & waited & " polls: spotlight windows " & my spotlightWindows() & ", frontmost " & (name of first process whose frontmost is true))
+		my debugLog("window attributes: " & my windowState())
+		my debugLog("elements: " & my uiDump())
 		key code 21 using command down
-		delay 0.3
-		my debugLog("after Command + 4: spotlight windows " & my spotlightWindows())
+		delay 0.5
+		my debugLog("after Command + 4, elements: " & my uiDump())
 	end tell
 end openClipboardHistory
 
@@ -106,6 +108,57 @@ on spotlightWindows()
 end spotlightWindows
 
 -- Temporary, for finding why Command + 4 does not land; removed before merge.
+on windowState()
+	tell application "System Events"
+		try
+			tell window 1 of process "Spotlight"
+				set out to ""
+				repeat with a in {"AXFocused", "AXMain", "AXRole", "AXSubrole", "AXTitle"}
+					try
+						set out to out & a & "=" & (value of attribute a as text) & " "
+					on error
+						set out to out & a & "=? "
+					end try
+				end repeat
+				return out
+			end tell
+		on error e
+			return "error: " & e
+		end try
+	end tell
+end windowState
+
+on uiDump()
+	tell application "System Events"
+		try
+			set out to ""
+			set els to entire contents of window 1 of process "Spotlight"
+			repeat with el in els
+				set r to ""
+				try
+					set r to role of el
+				end try
+				set d to ""
+				try
+					set d to description of el
+				end try
+				set t to ""
+				try
+					set t to (value of attribute "AXIdentifier" of el) as text
+				end try
+				set f to ""
+				try
+					if (value of attribute "AXFocused" of el) then set f to "*"
+				end try
+				set out to out & "[" & r & "|" & d & "|" & t & f & "] "
+			end repeat
+			return out
+		on error e
+			return "error: " & e
+		end try
+	end tell
+end uiDump
+
 on debugLog(msg)
 	do shell script "printf '%s %s\\n' \"$(date +%T)\" " & quoted form of msg & " >> ~/Library/Logs/key-helper-debug.log"
 end debugLog
