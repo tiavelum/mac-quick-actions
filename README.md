@@ -111,7 +111,7 @@ first. No permission is needed.
 |---|---|---|
 | Control + Command + Return | Show Control Center | Opens Control Center |
 | Control + Shift + Command + Return | Show System Settings | Opens System Settings |
-| Control + Option + Command + Backspace | Show Clipboard History | Opens Spotlight at its clipboard history |
+| Control + Option + Command + ↓ | Show Clipboard History | Opens Spotlight at its clipboard history |
 
 Show System Settings opens the app directly and needs no permission.
 

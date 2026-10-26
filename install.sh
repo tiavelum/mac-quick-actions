@@ -30,7 +30,8 @@ done
 
 # Key combinations of the global Quick Actions. The Services preferences
 # (pbs) key each entry by "(null) - <menu title> - runWorkflowAsService";
-# in a key equivalent ^ is Control, ~ Option, $ Shift, @ Command.
+# in a key equivalent ^ is Control, ~ Option, $ Shift, @ Command; \U000d is
+# Return, \Uf701 the down arrow. macOS accepts no Backspace in a service key.
 set_key() {
   defaults write pbs NSServicesStatus -dict-add \
     "\"(null) - $1 - runWorkflowAsService\"" \
@@ -46,7 +47,7 @@ else
   set_key "Show Control Center" '^@\U000d'
   set_key "Show System Settings" '^$@\U000d'
   set_key "Quick Look Clipboard" '^~@-'
-  set_key "Show Clipboard History" '^~@\U0008'
+  set_key "Show Clipboard History" '^~@\Uf701'
   /System/Library/CoreServices/pbs -flush
   killall Finder
   echo "Finder restarted"
