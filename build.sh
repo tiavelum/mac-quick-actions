@@ -208,7 +208,7 @@ CODE="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
 [ -x "$CODE" ] || CODE="$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
 [ -x "$CODE" ] || CODE="$(command -v code)"
 if [ ! -s "$STORE" ]; then
-  osascript -e "display alert \"No first file remembered\" message \"Apply 'Compare: Select First' to a file first.\""
+  osascript -e "display alert \"No first file remembered\" message \"Apply '\''Compare: Select First'\'' to a file first.\""
   exit 0
 fi
 FIRST="$(cat "$STORE")"
