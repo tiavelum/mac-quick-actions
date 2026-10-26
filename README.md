@@ -1,9 +1,9 @@
 # mac-quick-actions
 
 Small macOS integrations generated from plain text and worth versioning:
-two Finder Quick Actions for comparing files in VS Code, four Quick Actions
-on easy key combinations (two screenshots, Control Center, System Settings),
-and two tiny background applications that hold the permissions those keys
+two Finder Quick Actions for comparing files in VS Code, five Quick Actions
+on easy key combinations (two screenshots, Quick Look of the clipboard,
+Control Center, System Settings), and two tiny background applications that hold the permissions those keys
 need: screen recording for the screenshots, Accessibility for Control
 Center.
 
@@ -92,6 +92,17 @@ with **−**, then grant the permission again as above.
 Check the keys under System Settings → Keyboard → Keyboard Shortcuts →
 Services → General. A Quick Action without a key, or with a different one,
 gets it there by double-clicking the key column.
+
+## Quick Look of the clipboard
+
+**Control + Option + Command + -** (Quick Action **Quick Look Clipboard**)
+shows the current clipboard item in a Quick Look preview: a copied file as
+itself, an image as an image, anything else as plain text. Earlier items
+are in Spotlight's clipboard history.
+
+Quick Look previews files only, so `quick-look-clipboard.sh`, which
+`build.sh` embeds in the Quick Action, writes the item to a temporary file
+first. No permission is needed.
 
 ## Control Center and System Settings from the keyboard
 

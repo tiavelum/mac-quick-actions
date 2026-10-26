@@ -236,3 +236,8 @@ build "screenshot-whole-screen" "Screenshot: Whole Screen" "$SHOT_SCREEN" "DD" g
 # Settings needs no helper: opening an app needs no permission.
 build "show-control-center" "Show Control Center" 'open -g -a "Control Center Toggle"' "EE" global
 build "show-system-settings" "Show System Settings" 'open -b com.apple.systempreferences' "FF" global
+
+# The script lives in its own file for readability; it is embedded here
+# with the characters XML reserves escaped, as the other scripts are.
+QUICK_LOOK=$(sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' quick-look-clipboard.sh)
+build "quick-look-clipboard" "Quick Look Clipboard" "$QUICK_LOOK" "GG" global

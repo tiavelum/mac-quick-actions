@@ -45,6 +45,7 @@ else
   set_key "Screenshot: Whole Screen" '^~@\U000d'
   set_key "Show Control Center" '^@\U000d'
   set_key "Show System Settings" '^$@\U000d'
+  set_key "Quick Look Clipboard" '^~@-'
   /System/Library/CoreServices/pbs -flush
   killall Finder
   echo "Finder restarted"
