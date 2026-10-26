@@ -78,25 +78,18 @@ on openClipboardHistory()
 		if (current application's NSEvent's modifierFlags() as integer) mod 2097152 div 131072 is 0 then exit repeat
 		delay 0.05
 	end repeat
-	my debugLog("modifiers released")
 	tell application "System Events"
 		if not my spotlightFieldFocused() then key code 49 using command down
-		set n to 0
 		repeat 40 times
 			if my spotlightFieldFocused() then exit repeat
 			delay 0.05
-			set n to n + 1
 		end repeat
-		my debugLog("field focused after " & n & " polls")
 		repeat with attempt from 1 to 2
 			key code 21 using command down
-			set n to 0
 			repeat 40 times
 				if my clipboardShown() then exit repeat
 				delay 0.05
-				set n to n + 1
 			end repeat
-			my debugLog("attempt " & attempt & ": clipboard shown " & my clipboardShown() & " after " & n & " polls")
 			if my clipboardShown() then exit repeat
 		end repeat
 	end tell
@@ -122,8 +115,3 @@ on clipboardShown()
 	end tell
 	return false
 end clipboardShown
-
--- Temporary, for finding why Command + 4 does not land; removed before merge.
-on debugLog(msg)
-	do shell script "printf '%s %s\\n' \"$(date +%T)\" " & quoted form of msg & " >> ~/Library/Logs/key-helper-debug.log"
-end debugLog
