@@ -8,7 +8,12 @@ background applications that hold the permissions those keys need: screen
 recording for the screenshots, Accessibility for Control Center and the
 clipboard history.
 
+Requires macOS; `osacompile`, `plutil` and `codesign` ship with it. The
+Compare actions need Visual Studio Code in `/Applications`.
+
 ```bash
+git clone https://github.com/tiavelum/mac-quick-actions.git ~/vc/mac-quick-actions
+cd ~/vc/mac-quick-actions
 ./install.sh              # install the Quick Actions; build the apps if absent
 ./install.sh --rebuild    # rebuild the apps (costs their permission grants — see below)
 ./build.sh                # regenerate the .workflow bundles from the templates
