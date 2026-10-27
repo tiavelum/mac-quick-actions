@@ -47,6 +47,11 @@ the clipboard:
 | Control + Option + Command + Space | Screenshot: Window or Selection | Starts in window mode; Space switches to selection and back |
 | Control + Option + Command + Return | Screenshot: Whole Screen | Captures the display under the mouse pointer |
 
+Space starts in window mode because Space is also the key that switches
+macOS's own capture between window and selection; Return takes everything
+at once. Both sit next to macOS's Shift + Command + 3 and 4, which stay as
+they are: a default is never replaced, only given an easier companion.
+
 The Quick Actions only pass the mode on; `/Applications/Screenshot
 Helper.app`, built from `screenshot-helper.applescript`, takes the
 screenshot. Run from a Quick Action itself, the capture would ask the app in
@@ -106,6 +111,10 @@ shows the current clipboard item in a Quick Look preview: a copied file as
 itself, an image as an image, anything else as plain text. Earlier items
 are in Spotlight's clipboard history.
 
+Minus, next to the clipboard history's ↓ on the same grip: minus for the one
+current item, down for the list. It is not Control + `<`: the ISO key `<`
+left of Y does not fire with Control held in a service shortcut.
+
 Quick Look previews files only, so `quick-look-clipboard.sh`, which
 `build.sh` embeds in the Quick Action, writes the item to a temporary file
 first. No permission is needed.
@@ -117,6 +126,11 @@ first. No permission is needed.
 | Control + Command + Return | Show Control Center | Opens Control Center |
 | Control + Shift + Command + Return | Show System Settings | Opens System Settings |
 | Control + Option + Command + ↓ | Show Clipboard History | Opens Spotlight at its clipboard history |
+
+Control Center and System Settings share Return: Shift means bigger, so the
+same key with Shift opens the larger panel. The clipboard history is on ↓
+rather than Backspace because macOS records no Backspace in a service key;
+`install.sh` notes this where it writes the keys.
 
 Show System Settings opens the app directly and needs no permission.
 
@@ -163,6 +177,23 @@ rm -rf "/Applications/Key Helper.app"
 The rebuilt app is a new app to macOS: first remove the old **Key Helper**
 entry under Privacy & Security → Accessibility with **−**, then grant it
 again as above.
+
+## Choosing a key
+
+All six keys use the grips Control + Option + Command, Control + Command and
+Control + Shift + Command: held by one hand even as four keys, unlike
+Shift + Command, free system-wide, and the same on the MacBook keyboard and
+a full-size keyboard. Ruled out when choosing a new one:
+
+- Control + Space, which VS Code uses for its suggestions.
+- Control + Command + arrows, which Finder uses to move between folders.
+- Control + Option with any key, which Rectangle's window keys use.
+- Keypad keys: they are separate key codes from the main block and the
+  MacBook keyboard has none.
+- Backspace and the ISO key `<`, for the reasons above.
+
+Before adding a key, look it up in the shortcut map with
+[mac-shortcut-map](https://github.com/tiavelum/mac-shortcut-map)'s `lookup`.
 
 ## The two entries in Login Items
 
