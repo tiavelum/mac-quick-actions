@@ -169,3 +169,7 @@ running after the next login, and its keys stop at the "Press Run" screen.
 Each agent runs `/usr/bin/open` through a link named after its app, in
 `~/Library/Application Support/mac-quick-actions/`, because the list names
 an agent after the program it starts.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
