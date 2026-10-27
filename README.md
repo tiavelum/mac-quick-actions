@@ -125,7 +125,8 @@ Command + Space, waits until Spotlight's search field takes keys, presses
 Command + 4 and checks that the clipboard history shows, pressing it once
 more if not; each wait gives up after two seconds. Spotlight's clipboard
 history must be switched on (System Settings → Spotlight → Results from
-Clipboard).
+Clipboard); [How To Use the Spotlight Clipboard History In macOS Tahoe](https://macmost.com/how-to-use-the-spotlight-clipboard-history-in-macos-tahoe.html)
+(MacMost) shows the history and its settings.
 
 Like Screenshot Helper, Key Helper runs in the background, started at login
 by the launch agent `~/Library/LaunchAgents/io.github.tiavelum.key-helper.plist`,
@@ -168,7 +169,10 @@ running after the next login, and its keys stop at the "Press Run" screen.
 
 Each agent runs `/usr/bin/open` through a link named after its app, in
 `~/Library/Application Support/mac-quick-actions/`, because the list names
-an agent after the program it starts.
+an agent after the program it starts. The launchd key meant to name it,
+`AssociatedBundleIdentifiers`, has no effect here; see
+[AssociatedBundleIdentifiers for LaunchAgents/Daemons](https://developer.apple.com/forums/thread/713493)
+in the Apple Developer Forums.
 
 ## License
 
